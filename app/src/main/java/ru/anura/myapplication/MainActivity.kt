@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         // Запрос разрешения на уведомления для Android 13 и выше
         askPermission()
         binding.simpleService.setOnClickListener {
+            stopService(MyForegroundService.newIntent(this))
             startService(MyService.newIntent(this))
         }
         binding.foregroundService.setOnClickListener {

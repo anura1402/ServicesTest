@@ -26,6 +26,7 @@ class MyService: Service() {
                 delay(1000)
                 Log.d("SERVICE_TAG","Timer $i")
             }
+            stopSelf()
         }
         return START_STICKY
     }
