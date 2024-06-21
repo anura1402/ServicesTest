@@ -27,7 +27,7 @@ class MyService: Service() {
                 Log.d("SERVICE_TAG","Timer $i")
             }
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onDestroy() {
