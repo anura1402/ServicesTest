@@ -1,17 +1,15 @@
 package ru.anura.myapplication
 
 import android.Manifest
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import ru.anura.myapplication.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -38,6 +36,18 @@ class MainActivity : AppCompatActivity() {
         binding.intentService.setOnClickListener {
             ContextCompat.startForegroundService(this,
                 MyIntentService.newIntent(this))
+        }
+        binding.jobScheduler.setOnClickListener {
+            val componentName = ComponentName(this, MyJobService::class.java)
+
+            val jobInfo = JobInfo.Builder(MyJobService.JOB_ID, componentName)
+                .setRequiresCharging(true) //работа только на зарядке
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED) //работа только от Wi-Fi
+                .setPersisted(true) //запуск после выключения и включения телефона
+                .build()
+
+            val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
+            jobScheduler.schedule(jobInfo)
         }
     }
 

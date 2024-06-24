@@ -51,7 +51,7 @@ class MyForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         coroutineScope.launch {
-            for (i in 0 until 100) {
+            for (i in 0 until 10) {
                 delay(1000)
                 Log.d("SERVICE_TAG", "Timer $i")
             }

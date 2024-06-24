@@ -26,7 +26,7 @@ class MyJobService : JobService() {
     override fun onStartJob(params: JobParameters?): Boolean {
 
         coroutineScope.launch {
-            for (i in 0 until 100) {
+            for (i in 0 until 10) {
                 delay(1000)
                 Log.d("SERVICE_TAG", "Timer $i")
             }
@@ -44,6 +44,7 @@ class MyJobService : JobService() {
     }
 
     companion object {
+        const val JOB_ID = 10
         fun newIntent(context: Context): Intent {
             return Intent(context, MyService::class.java)
         }
