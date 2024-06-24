@@ -11,6 +11,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkManager
 import ru.anura.myapplication.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -61,6 +63,15 @@ class MainActivity : AppCompatActivity() {
         }
         binding.jobIntentService.setOnClickListener {
             MyJobIntentService.enqueue(this,page++)
+        }
+        binding.workManager.setOnClickListener {
+            val workManager = WorkManager.getInstance(applicationContext)
+            //один work в одно время
+            workManager.enqueueUniqueWork(
+                MyWorker.WORK_NAME,
+                ExistingWorkPolicy.APPEND, //добавить в очередь, если их несколько
+                MyWorker.makeRequest(page++) // все параметры
+            )
         }
     }
 
