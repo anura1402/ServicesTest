@@ -3,6 +3,7 @@ package ru.anura.myapplication
 import android.Manifest
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
+import android.app.job.JobWorkItem
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.Build
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
+    private var page = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,11 +45,17 @@ class MainActivity : AppCompatActivity() {
             val jobInfo = JobInfo.Builder(MyJobService.JOB_ID, componentName)
                 .setRequiresCharging(true) //работа только на зарядке
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED) //работа только от Wi-Fi
-                .setPersisted(true) //запуск после выключения и включения телефона
+                //.setPersisted(true) //запуск после выключения и включения телефона
                 .build()
 
             val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
-            jobScheduler.schedule(jobInfo)
+
+            //jobScheduler.schedule(jobInfo)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val intent = MyJobService.newIntent(page++)
+                jobScheduler.enqueue(jobInfo, JobWorkItem(intent))
+            }
         }
     }
 

@@ -5,6 +5,7 @@ import android.app.job.JobParameters
 import android.app.job.JobService
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -24,13 +25,21 @@ class MyJobService : JobService() {
     //возвращаемый тип - статус выполняемой работы сервиса(выполняется еще или нет).
     //При синхронной работе возвращаем false, при асинхронной - true, т.е. сами когда-то завершим
     override fun onStartJob(params: JobParameters?): Boolean {
-
-        coroutineScope.launch {
-            for (i in 0 until 10) {
-                delay(1000)
-                Log.d("SERVICE_TAG", "Timer $i")
+        Log.d("SERVICE_TAG", "onStartJob")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            coroutineScope.launch {
+                var workItem = params?.dequeueWork()
+                while (workItem != null) {
+                    val page = workItem.intent.getIntExtra(PAGE,0)
+                    for (i in 0 until 5) {
+                        delay(1000)
+                        Log.d("SERVICE_TAG", "Page ${page}: Timer $i ")
+                    }
+                    params?.completeWork(workItem)
+                    workItem = params?.dequeueWork()
+                }
+                jobFinished(params, false)
             }
-            jobFinished(params, true)
         }
         return true
     }
@@ -40,13 +49,17 @@ class MyJobService : JobService() {
     //заново на выполнение этот сервис
     override fun onStopJob(p0: JobParameters?): Boolean {
         Log.d("SERVICE_TAG", "onStopJob")
+        coroutineScope.cancel()
         return true
     }
 
     companion object {
         const val JOB_ID = 10
-        fun newIntent(context: Context): Intent {
-            return Intent(context, MyService::class.java)
+        const val PAGE = "page"
+        fun newIntent(page: Int): Intent {
+            return Intent().apply {
+                putExtra(PAGE, page)
+            }
         }
     }
 }
