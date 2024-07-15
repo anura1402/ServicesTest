@@ -1,6 +1,8 @@
 package ru.anura.myapplication
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.app.job.JobWorkItem
@@ -16,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
 import ru.anura.myapplication.databinding.ActivityMainBinding
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
@@ -91,6 +94,17 @@ class MainActivity : AppCompatActivity() {
                 ExistingWorkPolicy.APPEND, //добавить в очередь, если их несколько
                 MyWorker.makeRequest(page++) // все параметры
             )
+        }
+
+        binding.alarmManager.setOnClickListener {
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+            val calendar = Calendar.getInstance()
+            //через 30 секунд, после текущего времени
+            calendar.add(Calendar.SECOND,30)
+            val intent = AlarmReceiver.newIntent(this)
+            val pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE)
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
         }
     }
 
