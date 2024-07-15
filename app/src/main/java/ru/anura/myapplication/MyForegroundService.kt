@@ -19,25 +19,35 @@ import kotlinx.coroutines.launch
 
 class MyForegroundService : Service() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
+    private val notificationManager by lazy {
+        getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    private val notificationBuilder by lazy {
+        createNotification()
+
+    }
+
     override fun onCreate() {
         super.onCreate()
         Log.d("SERVICE_TAG", "onCreate")
-        val notification = createNotification()
-        startForeground(1, notification)
-
-    }
-
-    private fun createNotification(): Notification {
         createChannel()
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Foreground service")
-            .setContentText("Foreground Text")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .build()
+        val notification = createNotification()
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+
     }
+
+    private fun createNotification() = NotificationCompat.Builder(this, CHANNEL_ID)
+        .setContentTitle("Foreground service")
+        .setContentText("Foreground Text")
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setProgress(100, 0, false)
+        .setOnlyAlertOnce(true)
+
 
     private fun createChannel() {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 CHANNEL_ID,
@@ -51,8 +61,12 @@ class MyForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         coroutineScope.launch {
-            for (i in 0 until 100) {
+            for (i in 0..100 step 5) {
                 delay(1000)
+                val notification =
+                    notificationBuilder.setProgress(100, i, false)
+                        .build()
+                notificationManager.notify(NOTIFICATION_ID, notification)
                 Log.d("SERVICE_TAG", "Timer $i")
             }
             stopSelf()
@@ -72,7 +86,8 @@ class MyForegroundService : Service() {
 
     companion object {
         private const val CHANNEL_ID = "ForegroundServiceChannel"
-        private const val CHANNEL_NAME  = "ForegroundServiceChannelName"
+        private const val CHANNEL_NAME = "ForegroundServiceChannelName"
+        private const val NOTIFICATION_ID = 1
         fun newIntent(context: Context): Intent {
             return Intent(context, MyForegroundService::class.java)
         }
