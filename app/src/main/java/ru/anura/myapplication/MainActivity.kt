@@ -5,9 +5,11 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.app.job.JobWorkItem
 import android.content.ComponentName
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -22,6 +24,19 @@ class MainActivity : AppCompatActivity() {
     }
     private var page = 0
 
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = (service as? MyForegroundService.LocalBinder) ?: return
+            val foregroundService = binder.getService()
+            foregroundService.onProgressChanged = { progress ->
+                binding.progressBarLoading.progress = progress
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,12 +49,16 @@ class MainActivity : AppCompatActivity() {
             startService(MyService.newIntent(this))
         }
         binding.foregroundService.setOnClickListener {
-            ContextCompat.startForegroundService(this,
-                MyForegroundService.newIntent(this))
+            ContextCompat.startForegroundService(
+                this,
+                MyForegroundService.newIntent(this)
+            )
         }
         binding.intentService.setOnClickListener {
-            ContextCompat.startForegroundService(this,
-                MyIntentService.newIntent(this))
+            ContextCompat.startForegroundService(
+                this,
+                MyIntentService.newIntent(this)
+            )
         }
         binding.jobScheduler.setOnClickListener {
             val componentName = ComponentName(this, MyJobService::class.java)
@@ -57,12 +76,12 @@ class MainActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val intent = MyJobService.newIntent(page++)
                 jobScheduler.enqueue(jobInfo, JobWorkItem(intent))
-            }else{
-                startService(MyIntentService2.newIntent(this,page++))
+            } else {
+                startService(MyIntentService2.newIntent(this, page++))
             }
         }
         binding.jobIntentService.setOnClickListener {
-            MyJobIntentService.enqueue(this,page++)
+            MyJobIntentService.enqueue(this, page++)
         }
         binding.workManager.setOnClickListener {
             val workManager = WorkManager.getInstance(applicationContext)
@@ -73,6 +92,20 @@ class MainActivity : AppCompatActivity() {
                 MyWorker.makeRequest(page++) // все параметры
             )
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService(serviceConnection)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindService(
+            MyForegroundService.newIntent(this),
+            serviceConnection,
+            0
+        )
     }
 
     private fun askPermission() {
