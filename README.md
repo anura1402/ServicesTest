@@ -7,3 +7,8 @@
 Foreground Service отправляет уведомление пользователю
 
 <img src="https://github.com/user-attachments/assets/fff644b8-34e9-4a1a-b7e0-a74f69f76efa" width="512">
+
+AlarmManager отправляет уведомление через 30 секунд
+
+<img src="https://github.com/user-attachments/assets/f8565a94-cc9e-4231-b2bf-e34a9c93b078" width="512">
+
